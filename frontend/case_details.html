@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Information Entry</title>
+    <!-- Link to Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link to Bootstrap Icons (optional) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Link to Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <style>
+        /* --- Keep all previous styles --- */
+        body {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #caseFormContainer {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 900px; /* Keep form width */
+            margin: 20px auto;
+        }
+
+        /* Styles for form elements */
+        .form-row { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { flex: 1 1 calc(50% - 0.75rem); min-width: 200px; display: flex; flex-direction: column; }
+        label { margin-bottom: .5rem; font-weight: 500; color: #555; }
+        .form-control { padding: 0.3rem 0.75rem; font-size: 0.9rem; line-height: 1.5; border-radius: 6px; border: 1px solid #ced4da; width: 100%; background-clip: padding-box; appearance: none; transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out; }
+        select.form-control { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px 12px; }
+        .form-control:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); outline: 0; }
+        .button-row { text-align: center; margin-top: 1.5rem; }
+        .submit-button { min-width: 100px; display: inline-block; font-weight: 400; line-height: 1.5; color: #fff; text-align: center; text-decoration: none; vertical-align: middle; cursor: pointer; user-select: none; background-color: #28a745; border: 1px solid #28a745; padding: .375rem .75rem; font-size: .875rem; border-radius: .25rem; transition: all .15s ease-in-out; }
+        .submit-button:disabled { background-color: #6c757d; border-color: #6c757d; cursor: not-allowed; }
+        .submit-button:hover:not(:disabled) { background-color: #218838; border-color: #1e7e34; }
+        label.required::after { content: " *"; color: red; }
+
+        /* For API status messages */
+        #apiStatusMessage { margin-top: 1.5rem; padding: 0.8rem; border-radius: 6px; display: none; text-align: left; }
+        #apiStatusMessage.alert-danger { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; display: block; }
+        #apiStatusMessage.alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; display: block; }
+        #apiStatusMessage.alert-info { color: #055160; background-color: #cff4fc; border-color: #b6effb; display: block; }
+        #apiStatusMessage.alert-warning { color: #664d03; background-color: #fff3cd; border-color: #ffecb5; display: block;}
+
+
+        /* Container for the structured results */
+        #caseResultsContainer {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Styling for result sections */
+        .result-section h3 {
+            background-color: #0d6efd;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+         .result-section:not(:last-child) { margin-bottom: 2rem; }
+
+        /* Case Details specific styling */
+        .case-details-grid .row { margin-bottom: 0.5rem; }
+        .case-details-grid p { margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .case-details-grid strong { color: #333; display: inline-block; }
+
+        /* Table styling */
+        .table th { background-color: #e9ecef; font-weight: 500; font-size: 0.85rem; padding: 0.5rem; vertical-align: middle; }
+        .table td { font-size: 0.85rem; padding: 0.5rem; vertical-align: middle; word-break: break-word; }
+        .table td a:not(.clickable-cell) { text-decoration: none; }
+        .table td a:not(.clickable-cell):hover { text-decoration: underline; }
+        .table-striped > tbody > tr:nth-of-type(odd) > * { --bs-table-accent-bg: rgba(0, 0, 0, 0.03); }
+        .table-bordered { border-color: #dee2e6; }
+
+        /* Spinner */
+        .spinner-border-sm { display: inline-block; width: 1rem; height: 1rem; vertical-align: -0.125em; border: .2em solid currentColor; border-right-color: transparent; border-radius: 50%; animation: .75s linear infinite spinner-border; }
+        @keyframes spinner-border { to { transform: rotate(360deg); } }
+
+        /* --- STYLE for clickable cells --- */
+        .clickable-cell {
+            color: #0d6efd;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+        .clickable-cell:hover {
+            color: #0a58ca;
+        }
+         /* Style for disabled/loading clickable cell */
+        .clickable-cell.loading {
+            color: #6c757d;
+            cursor: default;
+            text-decoration: none;
+        }
+
+        /* --- Style for Floating Draft Button --- */
+        #draftButton {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: #28a745; /* Green - Same as submit */
+            color: white;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 50px; /* More rounded */
+            font-size: 1rem;
+            font-weight: 500; /* Slightly bolder */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Slightly stronger shadow */
+            display: none; /* Initially hidden */
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+
+        #draftButton:hover {
+            background-color: #218838; /* Darker green on hover */
+            transform: scale(1.05); /* Slight scale effect on hover */
+        }
+
+         #draftButton i {
+             margin-right: 5px; /* Space between icon and text */
+         }
+
+    </style>
+</head>
+<body>
+
+    <div id="caseFormContainer">
+        <form id="caseForm">
+             <!-- Form elements remain the same -->
+             <div class="form-row">
+                 <div class="form-group">
+                     <label for="court_type" class="required">Court Type:</label>
+                     <select id="court_type" name="court_type" class="form-control" required>
+                         <option value="" disabled selected>-- Select Court --</option>
+                     </select>
+                 </div>
+                 <div class="form-group">
+                     <label for="case_type" class="required">Case Type:</label>
+                     <select id="case_type" name="case_type" class="form-control" required>
+                          <option value="" disabled selected>-- Select Case Type --</option>
+                     </select>
+                 </div>
+             </div>
+             <div class="form-row">
+                 <div class="form-group">
+                     <label for="case_number" class="required">Case Number:</label>
+                     <input type="text" id="case_number" name="case_number" class="form-control" required>
+                 </div>
+                 <div class="form-group">
+                     <label for="year" class="required">Year:</label>
+                     <select id="year" name="year" class="form-control" required>
+                          <option value="" disabled selected>-- Select Year --</option>
+                     </select>
+                 </div>
+             </div>
+             <div class="button-row">
+                 <button type="submit" id="submitButton" class="submit-button">Submit</button>
+             </div>
+             <div id="apiStatusMessage"></div> <!-- Status messages for BOTH form submit AND cell clicks -->
+        </form>
+    </div>
+
+    <!-- Container to display the structured results -->
+    <div id="caseResultsContainer" style="display: none;"></div>
+
+    <!-- Floating Draft Button -->
+    <button id="draftButton" title="Go to Draft Page"><i class="bi bi-pencil-square"></i> Draft</button>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Element References (unchanged) ---
+            const courtTypeSelect = document.getElementById('court_type');
+            const caseTypeSelect = document.getElementById('case_type');
+            const yearSelect = document.getElementById('year');
+            const caseForm = document.getElementById('caseForm');
+            const caseNumberInput = document.getElementById('case_number');
+            const submitButton = document.getElementById('submitButton');
+            const apiStatusMessageDiv = document.getElementById('apiStatusMessage');
+            const caseResultsContainer = document.getElementById('caseResultsContainer');
+            const draftButton = document.getElementById('draftButton'); // Reference to the new button
+
+            let currentLoadedCaseNumber = null; // Variable to store the current case number
+
+            // --- Populate Dropdowns (unchanged) ---
+             function populateDropdown(selectElement, optionsArray) {
+                 if (!selectElement || !Array.isArray(optionsArray)) { console.error("Invalid args for populateDropdown", {selectElement, optionsArray}); return; }
+                 const defaultOption = selectElement.querySelector('option[disabled]');
+                 selectElement.innerHTML = '';
+                 if (defaultOption) selectElement.appendChild(defaultOption);
+                 optionsArray.forEach(optionText => {
+                     const option = document.createElement('option');
+                     const value = String(optionText); option.value = value; option.textContent = value;
+                     selectElement.appendChild(option);
+                 });
+                 if (defaultOption) defaultOption.selected = true;
+             }
+             if (typeof courtTypes !== 'undefined' && Array.isArray(courtTypes)) { populateDropdown(courtTypeSelect, courtTypes); } else { console.error("courtTypes array not found."); courtTypeSelect.innerHTML = '<option value="" disabled selected>Error loading courts</option>'; }
+             if (typeof caseTypes !== 'undefined' && Array.isArray(caseTypes)) { populateDropdown(caseTypeSelect, caseTypes); } else { console.error("caseTypes array not found."); caseTypeSelect.innerHTML = '<option value="" disabled selected>Error loading types</option>'; }
+             if (typeof caseYears !== 'undefined' && Array.isArray(caseYears)) { populateDropdown(yearSelect, caseYears); } else { console.error("caseYears array not found."); yearSelect.innerHTML = '<option value="" disabled selected>Error loading years</option>'; }
+
+            // --- Helper Functions for Displaying Results (unchanged) ---
+            function displayStatusMessage(message, type = 'info') {
+                apiStatusMessageDiv.textContent = message;
+                apiStatusMessageDiv.className = `alert alert-${type}`;
+                apiStatusMessageDiv.style.display = 'block';
+            }
+            function clearStatusMessage() {
+                apiStatusMessageDiv.textContent = '';
+                apiStatusMessageDiv.style.display = 'none';
+                apiStatusMessageDiv.className = '';
+            }
+            function clearResults() {
+                 caseResultsContainer.innerHTML = '';
+                 caseResultsContainer.style.display = 'none';
+                 clearStatusMessage();
+                 caseForm.classList.remove('was-validated');
+                 draftButton.style.display = 'none'; // Hide draft button when clearing
+                 currentLoadedCaseNumber = null; // Reset case number
+            }
+            function getValue(value) {
+                 return (value !== null && value !== undefined && value !== '') ? String(value).trim() : '---';
+            }
+            function createSimpleLink(path, linkText = "View Document") {
+                 if (path && (typeof path === 'string') && (path.includes('download_file.php') || path.includes('/'))) {
+                     const url = path;
+                     return `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+                 }
+                 return getValue(path);
+            }
+            function generateCaseDetailsHTML(details, caseNum) {
+                 if (!details || typeof details !== 'object') return '';
+                 const title = details["section_title"] || `Case Details For Case ${caseNum !== '---' ? caseNum : '(Not Available)'}`;
+                 let html = `<div class="result-section case-details-grid"><h3>${title}</h3><div class="row">`;
+                 const leftColKeys = [ "diary_number", "category", "party_detail", "advocate_name", "respondent_advocate_name", "status"];
+                 const rightColKeys = ["registration_date", "main_case_detail", "district", "list_type", "next_date"];
+                 html += '<div class="col-md-6">';
+                 leftColKeys.forEach(key => { if (details.hasOwnProperty(key)) { const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); html += `<p><strong>${label}:</strong> ${getValue(details[key])}</p>`; } });
+                 html += '</div><div class="col-md-6">';
+                 rightColKeys.forEach(key => { if (details.hasOwnProperty(key)) { const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); const displayLabel = key === 'next_date' ? 'Next Date' : label; html += `<p><strong>${displayLabel}:</strong> ${getValue(details[key])}</p>`; } });
+                 html += '</div></div></div>'; return html;
+            }
+            function generateTableHTML(title, headers, dataArray, keyOrder, tableNameIdentifier, currentCaseNumber) {
+                 if (!Array.isArray(dataArray) || dataArray.length === 0) return '';
+                 let tableHTML = `<div class="result-section"><h3>${title}</h3><div class="table-responsive">`;
+                 tableHTML += `<table class="table table-bordered table-striped table-sm"><thead><tr>`;
+                 headers.forEach(header => tableHTML += `<th>${header}</th>`);
+                 tableHTML += `</tr></thead><tbody>`;
+                 dataArray.forEach(item => {
+                     tableHTML += `<tr>`;
+                     keyOrder.forEach(key => {
+                         let cellContent = getValue(item[key]); let isClickable = false; let rowValueForApi = ''; let columnNameForApi = key;
+                         if (cellContent !== '---') {
+                             switch (tableNameIdentifier) {
+                                 case 'related_cases': if (key === 'view_order') { const caseNumberValue = getValue(item['case_number']); if (caseNumberValue !== '---') { isClickable = true; rowValueForApi = caseNumberValue; cellContent = createSimpleLink(item[key]) !== '---' ? "View Order" : cellContent; } else { cellContent = createSimpleLink(item[key]); } } break;
+                                 case 'copy_petitions': if (key === 'petition_type_no') { isClickable = true; rowValueForApi = cellContent; } break;
+                                 case 'judgment_details': if (key === 'view_order') { const orderDateValue = getValue(item['order_date']); if (orderDateValue !== '---') { isClickable = true; rowValueForApi = orderDateValue; cellContent = "View Order"; } else { cellContent = createSimpleLink(item[key]); } } break;
+                             }
+                         }
+                         tableHTML += `<td>`;
+                         if (isClickable && currentCaseNumber !== '---') {
+                             tableHTML += `<a href="#" class="clickable-cell" data-column-name="${columnNameForApi}" data-row-value="${rowValueForApi}" data-table-name="${tableNameIdentifier}" data-case-number="${currentCaseNumber}">${cellContent}</a>`;
+                         } else { if ((tableNameIdentifier === 'related_cases' || tableNameIdentifier === 'judgment_details') && key === 'view_order' && !isClickable && item[key]) { tableHTML += createSimpleLink(item[key]); } else { tableHTML += cellContent; } }
+                         tableHTML += `</td>`;
+                     });
+                     tableHTML += `</tr>`;
+                 });
+                 tableHTML += `</tbody></table></div></div>`; return tableHTML;
+            }
+
+            // --- *** UPDATED: Function to handle API call on cell click *** ---
+            async function handleCellClick(element) {
+                const columnName = element.dataset.columnName;
+                const rowValue = element.dataset.rowValue;
+                const tableName = element.dataset.tableName;
+                const caseNumber = element.dataset.caseNumber;
+
+                if (element.classList.contains('loading')) { return; } // Prevent multiple clicks
+                if (!columnName || !rowValue || !tableName || !caseNumber || caseNumber === '---') {
+                    console.error("Missing or invalid data attributes:", element.dataset);
+                    displayStatusMessage("Error: Could not retrieve necessary data for file request.", "danger");
+                    return;
+                }
+
+                const apiUrl = `${config.base_url}/legal/get-case-file`;
+                const apiPayload = {
+                    case_number: caseNumber, column_name: columnName,
+                    row_value: rowValue, table_name: tableName
+                };
+
+                console.log("Calling API:", apiUrl, "with payload:", apiPayload);
+                displayStatusMessage(`Requesting file for ${tableName} -> ${columnName}...`, 'info');
+
+                // Visual Loading State
+                const originalText = element.innerHTML;
+                element.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Downloading...';
+                element.classList.add('loading');
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Accept': '*/*', 'Content-Type': 'application/json' },
+                        body: JSON.stringify(apiPayload)
+                    });
+
+                    clearStatusMessage(); // Clear "Requesting..." message
+
+                    if (response.ok) {
+                        // --- SUCCESS: Expecting a file response ---
+                        console.log("API Success Response Status:", response.status);
+
+                        // 1. Extract filename (BEST EFFORT)
+                        //    FileResponse usually sets 'Content-Disposition: attachment; filename="...".
+                        const contentDisposition = response.headers.get("content-disposition");
+                        let filename = `download_${tableName}_${rowValue.replace(/\W+/g, '_')}.pdf`; // More robust default
+                        if (contentDisposition) {
+                            // Regex to find filename*=... (UTF-8) or filename=...
+                            const filenameMatch = contentDisposition.match(/filename\*?=(?:UTF-8'')?([^;]+)/i);
+                            if (filenameMatch && filenameMatch[1]) {
+                                // Decode URI component for potential UTF-8 encoding and remove quotes
+                                filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''));
+                            }
+                        }
+                        console.log("Content-Disposition:", contentDisposition, "Extracted Filename:", filename);
+
+                        try {
+                            // 2. Get the file data as a Blob
+                            const blob = await response.blob();
+
+                            // 3. Create a temporary URL for the Blob
+                            const url = window.URL.createObjectURL(blob);
+
+                            // 4. Create an invisible link to trigger the download
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = filename; // Set the download attribute
+
+                            // 5. Append link to body, click it, and remove it
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+
+                            // 6. Revoke the object URL to free up memory
+                            window.URL.revokeObjectURL(url);
+
+                        } catch (blobError) {
+                            console.error("Error processing file blob:", blobError);
+                            displayStatusMessage("Error: Could not process the received file data for download.", "danger");
+                        }
+
+                    } else {
+                        // --- API ERROR (Non-200 Status) ---
+                        let errorMessage = `File request failed with status ${response.status}`;
+                        try {
+                            const errorData = await response.json();
+                            console.error("API Error JSON:", errorData);
+                            errorMessage = errorData.detail || errorData.message || errorMessage;
+                        } catch (e) {
+                            try { const errorText = await response.text(); console.error("API Error Text:", errorText); if (errorText) { errorMessage = `${errorMessage} - ${errorText.substring(0, 150)}${errorText.length > 150 ? '...' : ''}`; } }
+                            catch (textErr) { console.error("Failed to read error response body."); }
+                        }
+                        displayStatusMessage(`Error: ${errorMessage}`, 'danger');
+                    }
+
+                } catch (error) {
+                    // --- NETWORK/FETCH ERROR ---
+                    console.error("Fetch Network Error:", error);
+                    clearStatusMessage();
+                    displayStatusMessage(`Network Error: Could not connect. (${error.message})`, 'danger');
+                } finally {
+                     // --- Restore Link State ---
+                     element.innerHTML = originalText;
+                     element.classList.remove('loading');
+                }
+            }
+
+            // --- Attach Event Listener for Clickable Cells (unchanged) ---
+            caseResultsContainer.addEventListener('click', function(event) {
+                const clickableElement = event.target.closest('.clickable-cell');
+                if (clickableElement) {
+                    event.preventDefault();
+                    handleCellClick(clickableElement);
+                }
+            });
+
+            // --- *** NEW: Event Listener for Draft Button *** ---
+            draftButton.addEventListener('click', function() {
+                if (currentLoadedCaseNumber && currentLoadedCaseNumber !== '---') {
+                    console.log(`Saving case number ${currentLoadedCaseNumber} to sessionStorage and redirecting to draft.html`);
+                    sessionStorage.setItem('caseNumber', currentLoadedCaseNumber);
+                    window.location.href = 'draft.html'; // Redirect
+                } else {
+                    console.error("Draft button clicked, but no valid case number is currently loaded.");
+                    // Optional: Display a temporary message to the user if needed
+                    displayStatusMessage("No active case number found to draft.", "warning");
+                    setTimeout(clearStatusMessage, 3000); // Clear message after 3 seconds
+                }
+            });
+
+            // --- Form Submission Handler (updated to show/hide draft button) ---
+            caseForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                clearResults();
+
+                if (!caseForm.checkValidity()) {
+                    event.stopPropagation();
+                    caseForm.classList.add('was-validated');
+                    return;
+                }
+                caseForm.classList.add('was-validated');
+
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+                displayStatusMessage('Fetching case details...', 'info');
+
+                 const apiPayload = { court: courtTypeSelect.value, case_type: caseTypeSelect.value, case_number: caseNumberInput.value.trim(), year: yearSelect.value };
+                 let apiUrl = '';
+                 if (typeof config !== 'undefined' && config.base_url) { apiUrl = `${config.base_url}/get-case-details`; }
+                 else { console.error("API base URL not configured."); displayStatusMessage('Error: API endpoint configuration missing.', 'danger'); submitButton.disabled = false; submitButton.innerHTML = 'Submit'; return; }
+
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(apiPayload) });
+                    let responseData = null;
+                    try { responseData = await response.json(); }
+                    catch (jsonError) { console.error("Failed to parse JSON:", jsonError); let errorText = response.ok ? "Invalid JSON response." : `Server error ${response.status}`; try { errorText = await response.text(); } catch(_) {} displayStatusMessage(`Error: ${errorText}`, 'danger'); submitButton.disabled = false; submitButton.innerHTML = 'Submit'; return; }
+
+                    if (response.ok && responseData) {
+                        clearStatusMessage();
+                        let resultsHTML = '';
+                        const currentCaseNumber = getValue(responseData.case_number);
+                        currentLoadedCaseNumber = currentCaseNumber; // Store the loaded case number
+
+                        resultsHTML += generateCaseDetailsHTML(responseData.case_details, currentCaseNumber);
+                        resultsHTML += generateTableHTML("Related Cases/Miscellaneous Applications", ["Case Number", "View Order", "Description"], responseData.related_cases, ['case_number', 'view_order', 'description'], 'related_cases', currentCaseNumber);
+                        resultsHTML += generateTableHTML("Case Listing Details", ["Cause List Date", "List Type:Sr. No.", "Bench"], responseData.case_listing, ['cause_list_date', 'list_type_sr_no', 'bench'], 'case_listing', currentCaseNumber);
+                        resultsHTML += generateTableHTML(`Details of Copy Petition Applied in ${currentCaseNumber !== '---' ? currentCaseNumber : '(N/A)'}`, ["Petition Type/No", "Petition Date", "Applied By", "Petition Status"], responseData.copy_petitions, ['petition_type_no', 'petition_date', 'applied_by', 'petition_status'], 'copy_petitions', currentCaseNumber);
+                        resultsHTML += generateTableHTML(`Judgment Details For Case: ${currentCaseNumber !== '---' ? currentCaseNumber : '(N/A)'}`, ["Order Date", "Order and Case-ID", "Bench", "View Order/Link"], responseData.judgment_details, ['order_date', 'order_and_case_id', 'bench', 'view_order'], 'judgment_details', currentCaseNumber);
+                        caseResultsContainer.innerHTML = resultsHTML; caseResultsContainer.style.display = 'block';
+
+                        // Show the draft button only if a valid case number was loaded
+                        if (currentLoadedCaseNumber !== '---') {
+                            draftButton.style.display = 'block';
+                        } else {
+                             draftButton.style.display = 'none'; // Ensure it's hidden if case number is invalid/missing
+                        }
+
+                    } else {
+                        console.error("API Error:", responseData); const errorMessage = responseData?.detail || responseData?.message || responseData?.error || `Request failed: ${response.status}`; displayStatusMessage(`Error: ${errorMessage}`, 'danger');
+                        draftButton.style.display = 'none'; // Hide button on error
+                        currentLoadedCaseNumber = null; // Reset case number on error
+                    }
+                } catch (error) {
+                    console.error("Fetch Error:", error); let message = `Unexpected error. Check console.`; if (error instanceof TypeError && error.message.includes('fetch')) { message = `Network Error: Could not connect. (${error.message})`; } else { message = `Error during fetch: ${error.message}`; } displayStatusMessage(message, 'danger');
+                    draftButton.style.display = 'none'; // Hide button on error
+                    currentLoadedCaseNumber = null; // Reset case number on error
+                } finally { submitButton.disabled = false; submitButton.innerHTML = 'Submit'; }
+            });
+        });
+    </script>
+
+</body>
+</html>

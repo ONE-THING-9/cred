@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Relevant Case Chat</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons for enhanced button design -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <!-- Add marked.js for markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      margin-top: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container.chat-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      margin-bottom: 20px;
+    }
+    .chat-area {
+      flex: 1;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+      overflow-y: auto;
+      background-color: #fafafa;
+    }
+    .chat-input {
+      padding: 10px;
+      background-color: #fff;
+      box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+      position: sticky;
+      bottom: 0;
+      background-color: white;
+    }
+    .input-group .form-control {
+      border-radius: 50px 0 0 50px;
+      border-color: #4267B2;
+    }
+    .input-group .btn {
+      border-radius: 0 50px 50px 0;
+    }
+    /* Add some margin between send and clear buttons */
+    .input-group .btn + .btn {
+      margin-left: 5px;
+    }
+    .chat-bubble {
+      padding: 15px 20px;
+      border-radius: 25px;
+      margin-bottom: 10px;
+      max-width: 70%;
+      word-wrap: break-word;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    .bot-message {
+      background-color: #f1f0f0;
+      align-self: flex-start;
+    }
+    .user-message {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+    }
+    .logo-container {
+      padding: 20px;
+    }
+    .logo-container img {
+      width: 200px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    /* Add styles for markdown content in chat bubbles */
+    .chat-bubble.bot-message {
+      background-color: #f1f0f0;
+      align-self: flex-start;
+    }
+    
+    /* Markdown styles within bot messages */
+    .bot-message .markdown-content {
+      font-family: inherit;
+    }
+    .bot-message .markdown-content h1,
+    .bot-message .markdown-content h2,
+    .bot-message .markdown-content h3 {
+      margin: 0.5rem 0;
+      font-size: 1.1em;
+    }
+    .bot-message .markdown-content p {
+      margin: 0.5rem 0;
+    }
+    .bot-message .markdown-content pre,
+    .bot-message .markdown-content code {
+      background: #e5e5e5;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .bot-message .markdown-content ul,
+    .bot-message .markdown-content ol {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+    /* Replace loading spinner styles with dot progress styles */
+    .loading-spinner {
+      display: inline-block;
+      margin: 10px;
+      text-align: center;
+    }
+    .dot-progress {
+      display: inline-block;
+    }
+    .dot-progress::after {
+      display: inline-block;
+      animation: dots 1.5s steps(4, end) infinite;
+      content: '';
+      width: 0;
+    }
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60% { content: '...'; }
+      80%, 100% { content: '....'; }
+    }
+    .loading-text {
+      color: #6c757d;
+      font-size: 0.9em;
+      display: inline-block;
+    }
+    
+    /* Style for disabled input during loading */
+    .input-group.loading input,
+    .input-group.loading button {
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    /* Add logout button styles */
+    .logout-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+      background-color: #dc3545;
+      color: white;
+    }
+
+    /* Custom styles for buttons in chat input */
+    .chat-input .btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .chat-input .btn:hover {
+      transform: scale(1.1);
+      transition: transform 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <!-- Add logout button -->
+  <button id="logoutBtn" class="btn btn-outline-danger logout-btn">
+    <i class="bi bi-box-arrow-right"></i> Logout
+  </button>
+
+  <div class="container">
+    <!-- Add logo section -->
+    <div class="row">
+      <div class="col logo-container">
+        <img src="./resources/logo.png" alt="Logo">
+      </div>
+    </div>
+  </div>
+
+  <div class="container chat-container">
+    <!-- Chat area for messages -->
+    <div id="chatArea" class="chat-area">
+      <div id="loadingMessage" class="loading-spinner">
+        <div class="loading-text">Loading search results</div>
+        <div class="dot-progress"></div>
+      </div>
+    </div>
+    <!-- Input area -->
+    <div class="chat-input">
+      <div id="inputGroup" class="input-group">
+        <input id="userMessage" type="text" class="form-control" placeholder="Type your message..." aria-label="User message">
+        <button id="sendMessage" class="btn btn-primary"><i class="bi bi-send"></i></button>
+        <button id="clearChat" class="btn btn-outline-danger" title="clear the chat">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Include the config file -->
+  <script src="./config.js"></script>
+  <script>
+    // Update the session checks at the start of script
+    const sessionId = localStorage.getItem('session_id');
+    const userId = localStorage.getItem('user_id');
+    const chatSessionId = localStorage.getItem('chat_session_id');
+
+    // Check both authentication session and chat session
+    if (!sessionId || !userId) {
+        window.location.href = 'login.html';
+        throw new Error('No authentication session');
+    }
+
+    if (!chatSessionId) {
+        window.location.href = 'sessions.html';
+        throw new Error('No chat session');
+    }
+
+    // Add session_id to all fetch calls
+    function addSessionHeader(headers = {}) {
+      return {
+        ...headers,
+        'Session-ID': sessionId
+      };
+    }
+
+    const pdf_link = sessionStorage.getItem('draft_pdf_link');
+    const summary = sessionStorage.getItem('draft_summary');
+    const chatArea = document.getElementById('chatArea');
+    const loadingMessageEl = document.getElementById('loadingMessage');
+    const userMessageInput = document.getElementById('userMessage');
+    const sendMessageBtn = document.getElementById('sendMessage');
+    const clearChatBtn = document.getElementById('clearChat');
+
+    let previousSearchResult = "";
+
+    // Helper function to create a chat bubble.
+    function createChatBubble(text, type) {
+      const bubble = document.createElement('div');
+      bubble.classList.add('chat-bubble');
+      if (type === 'bot') {
+        bubble.classList.add('bot-message');
+        const markdownDiv = document.createElement('div');
+        markdownDiv.classList.add('markdown-content');
+        markdownDiv.innerHTML = marked.parse(text);
+        bubble.appendChild(markdownDiv);
+      } else if (type === 'user') {
+        bubble.classList.add('user-message');
+        bubble.textContent = text;
+      }
+      return bubble;
+    }
+
+    // Append a message to the chat area.
+    function appendMessage(text, type) {
+      const bubble = createChatBubble(text, type);
+      chatArea.appendChild(bubble);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    // Add function to show/hide loading state
+    function setLoadingState(isLoading) {
+      const inputGroup = document.getElementById('inputGroup');
+      const userMessage = document.getElementById('userMessage');
+      const sendMessage = document.getElementById('sendMessage');
+      
+      if (isLoading) {
+        inputGroup.classList.add('loading');
+        userMessage.disabled = true;
+        sendMessage.disabled = true;
+      } else {
+        inputGroup.classList.remove('loading');
+        userMessage.disabled = false;
+        sendMessage.disabled = false;
+      }
+    }
+
+    // Add loading spinner to chat area
+    function appendLoadingSpinner() {
+      const spinner = document.createElement('div');
+      spinner.classList.add('loading-spinner');
+      spinner.innerHTML = `
+        <div class="loading-text">Processing</div>
+        <div class="dot-progress"></div>
+      `;
+      chatArea.appendChild(spinner);
+      return spinner;
+    }
+
+    function createPayload(userMessage = null) {
+      return {
+        user_message: userMessage,
+        session_id: chatSessionId,
+        user_id: userId
+      };
+    }
+
+    function loadInitialSearch() {
+      if (!summary) {
+        appendMessage("Error: Missing PDF link or summary data. Please go back and get summary first.", "bot");
+        loadingMessageEl.remove();
+        return;
+      }
+      
+      setLoadingState(true);
+      const payload = createPayload();
+
+      fetch(`${config.base_url}/chat-search-api`, {
+        method: 'POST',
+        headers: addSessionHeader({
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
+        }),
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Server error: " + response.statusText);
+        }
+        return response.json();
+      })
+      .then(result => {
+        if (result.status === "success" && result.data && result.data.search_result) {
+          const searchText = result.data.search_result;
+          appendMessage(searchText, "bot");
+          previousSearchResult = searchText;
+        } else {
+          appendMessage("Error: " + (result.message || "No search result available."), "bot");
+        }
+      })
+      .catch(error => {
+        appendMessage("Error: " + error.message, "bot");
+      })
+      .finally(() => {
+        if (loadingMessageEl) {
+          loadingMessageEl.remove();
+        }
+        setLoadingState(false);
+      });
+    }
+
+    function sendChatMessage(messageText) {
+      appendMessage(messageText, "user");
+      
+      setLoadingState(true);
+      const loadingSpinner = appendLoadingSpinner();
+      
+      const payload = createPayload(messageText);
+      
+      fetch(`${config.base_url}/chat-search-api`, {
+        method: 'POST',
+        headers: addSessionHeader({
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
+        }),
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Server error: " + response.statusText);
+        }
+        return response.json();
+      })
+      .then(result => {
+        if (result.status === "success" && result.data && result.data.search_result) {
+          const reply = result.data.search_result;
+          appendMessage(reply, "bot");
+          previousSearchResult = reply;
+        } else {
+          appendMessage("Error: " + (result.message || "Unknown error occurred."), "bot");
+        }
+      })
+      .catch(error => {
+        appendMessage("Error: " + error.message, "bot");
+      })
+      .finally(() => {
+        loadingSpinner.remove();
+        setLoadingState(false);
+      });
+    }
+
+    // Add event listener for input changes to control send button state
+    userMessageInput.addEventListener('input', function() {
+      const messageText = this.value.trim();
+      sendMessageBtn.disabled = messageText === '';
+      // Optional: Add visual feedback with opacity
+      sendMessageBtn.style.opacity = messageText === '' ? '0.5' : '1';
+    });
+
+    // Update the initial state of the send button
+    sendMessageBtn.disabled = true;
+    sendMessageBtn.style.opacity = '0.5';
+
+    // Update the send button click handler to include the disabled check
+    sendMessageBtn.addEventListener('click', function() {
+      const messageText = userMessageInput.value.trim();
+      if (messageText === "" || this.disabled) return;
+      sendChatMessage(messageText);
+      userMessageInput.value = "";
+      userMessageInput.focus();
+      // Reset button state after sending
+      this.disabled = true;
+      this.style.opacity = '0.5';
+    });
+
+    // Clear chat button event listener.
+    clearChatBtn.addEventListener('click', function() {
+      fetch(`${config.base_url}/delete-search-conversation?user_id=${userId}&session_id=${chatSessionId}`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Server error: " + response.statusText);
+        }
+        return response.json();
+      })
+      .then(result => {
+        if (result.status === "success") {
+          console.log("Chat cleared successfully.");
+          // Clear the chat UI except the first bot message.
+          const chatBubbles = chatArea.querySelectorAll('.chat-bubble');
+          chatBubbles.forEach((bubble, index) => {
+            if (index !== 0 || !bubble.classList.contains('bot-message')) {
+              bubble.remove();
+            }
+          });
+        } else {
+          console.error("Failed to clear chat:", result.message);
+        }
+      })
+      .catch(error => {
+        console.error("Error clearing chat:", error);
+      });
+    });
+
+    // Load the initial search message when the page is ready.
+    document.addEventListener('DOMContentLoaded', loadInitialSearch);
+
+    // Add logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch(`${config.base_url}/logout`, {
+          method: 'POST',
+          headers: addSessionHeader()
+        });
+        
+        const result = await response.json();
+        if (result.status === "success") {
+          // Clear session storage and local storage
+          sessionStorage.clear();
+          localStorage.removeItem('session_id');
+          localStorage.removeItem('chat_session_id');
+          // Redirect to login page
+          window.location.href = 'login.html';
+        } else {
+          alert("Logout failed: " + result.message);
+        }
+      } catch (error) {
+        alert("Error during logout: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
