@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Court Display Board</title>
+    <!-- Link to Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link to Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Link to Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Styles (Adapted) -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+        }
+
+        #displayBoardContainer {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 20px auto;
+        }
+
+        /* Header for Date/Time */
+        .display-header {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 500;
+            /* Flexbox to align items including the status icon */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: 10px; /* Add gap between date/time blocks */
+        }
+        .date-block { /* Container for date */
+             flex-basis: auto;
+        }
+        .time-block { /* Container for time and status icon */
+             display: flex;
+             align-items: center;
+             gap: 0.5rem; /* Space between time and icon */
+             flex-basis: auto;
+        }
+        #currentDate { color: #0d6efd; }
+        #currentTime { color: #dc3545; font-weight: 700; transition: color 0.3s ease; }
+        /* Style for the connection status icon */
+        #connectionStatusIcon {
+            font-size: 1rem; /* Adjust size as needed */
+            color: #ffc107; /* Bootstrap warning color */
+            transition: opacity 0.3s ease;
+            opacity: 0; /* Hidden by default */
+        }
+        #connectionStatusIcon.visible {
+            opacity: 1;
+        }
+
+
+        /* Court Selection Area (same as before) */
+        #courtSelectionContainer {
+            margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #eee;
+        }
+         #courtSelectionContainer label { margin-bottom: .5rem; font-weight: 500; color: #555; display: block; }
+         #highCourtSelect {
+            padding: 0.5rem 0.75rem; font-size: 1rem; line-height: 1.5;
+            border-radius: 6px; border: 1px solid #ced4da; width: 100%;
+            max-width: 400px; background-clip: padding-box; appearance: none;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px 12px;
+         }
+         #highCourtSelect:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); outline: 0; }
+
+        /* Table Styling (same as before) */
+        .table-container { margin-top: 1.5rem; }
+        .table th, .table td {
+            text-align: center; vertical-align: middle; padding: 0.6rem 0.5rem;
+            font-size: 0.9rem; border-color: #dee2e6;
+        }
+        .table thead th { background-color: #e9ecef; font-weight: 500; border-bottom-width: 2px; }
+         .table th:nth-child(odd), .table td:nth-child(odd) { font-weight: 500; color: #0d6efd; }
+         .table th:nth-child(even), .table td:nth-child(even) { font-weight: bold; color: #198754; }
+        .table-striped > tbody > tr:nth-of-type(odd) > * { --bs-table-accent-bg: rgba(0, 0, 0, 0.03); }
+        .table-message td { text-align: center; font-style: italic; color: #6c757d; background-color: #f8f9fa !important; }
+
+        /* API status DIV - Keep it for potential non-error messages, but hide errors */
+        #apiStatus {
+            margin-top: 1.5rem; padding: 0.8rem 1.25rem; border-radius: 6px;
+            display: none; /* Hide by default */ text-align: center; font-size: 0.9rem;
+        }
+        /* Only show info/success/warning from JS if needed, hide danger */
+        #apiStatus.alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; display: block; }
+        #apiStatus.alert-info { color: #055160; background-color: #cff4fc; border-color: #b6effb; display: block; }
+        #apiStatus.alert-warning { color: #664d03; background-color: #fff3cd; border-color: #ffecb5; display: block;}
+
+        /* Spinner (same as before) */
+        .spinner-border-sm { display: inline-block; width: 1rem; height: 1rem; vertical-align: -0.125em; border: .2em solid currentColor; border-right-color: transparent; border-radius: 50%; animation: .75s linear infinite spinner-border; }
+        @keyframes spinner-border { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="displayBoardContainer">
+        <!-- Header Row for Date and Time -->
+        <div class="display-header">
+            <div class="date-block">
+                Date: <span id="currentDate">Loading...</span>
+            </div>
+            <div class="time-block">
+                Time: <span id="currentTime">Loading...</span>
+                <span id="connectionStatusIcon" title="Connection issue: Displayed data might be outdated.">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </span>
+            </div>
+        </div>
+
+        <!-- Court Selection Dropdown -->
+        <div id="courtSelectionContainer">
+             <label for="highCourtSelect">Select High Court:</label>
+             <select id="highCourtSelect" name="high_court" class="form-control">
+                 <option value="" disabled selected>-- Select High Court --</option>
+                 <!-- Options will be dynamically inserted here -->
+             </select>
+        </div>
+
+
+        <!-- Status Message Area - Will NOT show fetch errors anymore -->
+        <div id="apiStatus"></div>
+
+        <!-- Table Area for Court Data -->
+        <div class="table-container table-responsive">
+            <table id="courtDataTable" class="table table-bordered table-striped table-sm">
+                <thead id="courtDataTableHeader">
+                    <!-- Header row generated by JS -->
+                    <tr><th>Court</th><th>S.No.</th><th>Court</th><th>S.No.</th></tr>
+                </thead>
+                <tbody id="courtDataTableBody">
+                    <!-- Initial message / Data rows generated by JS -->
+                     <tr class="table-message"><td colspan="4">Please select a High Court...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Load Config First -->
+    <script src="config.js"></script>
+    <!-- Load Data (contains highCourtNames) -->
+    <script src="data.js"></script>
+
+    <!-- Main Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Element References ---
+            const currentDateElem = document.getElementById('currentDate');
+            const currentTimeElem = document.getElementById('currentTime');
+            const highCourtSelectElem = document.getElementById('highCourtSelect');
+            const apiStatusElem = document.getElementById('apiStatus'); // Still needed potentially
+            const courtDataTableHeaderElem = document.getElementById('courtDataTableHeader');
+            const courtDataTableBodyElem = document.getElementById('courtDataTableBody');
+            const connectionStatusIconElem = document.getElementById('connectionStatusIcon'); // Reference to the icon span
+
+            // --- Configuration ---
+            const BASE_API_URL = config.base_url || 'http://localhost:8000';
+            const API_ENDPOINT = `${BASE_API_URL}/legal/get-display`;
+            const REFRESH_INTERVAL = config.displayBoardRefreshInterval || 30000;
+            const COURTS_PER_ROW = 2;
+            const TOTAL_COLUMNS = COURTS_PER_ROW * 2;
+
+            // --- State Variables ---
+            let selectedCourtName = null;
+            let refreshIntervalId = null;
+
+            // --- Helper: Show Message in Table Body ---
+            function showTableMessage(message, isLoading = false) {
+                let content = message;
+                if (isLoading) {
+                    content = `
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <span class="ms-2">${message}</span>`;
+                }
+                courtDataTableBodyElem.innerHTML = `
+                    <tr class="table-message">
+                        <td colspan="${TOTAL_COLUMNS}">${content}</td>
+                    </tr>`;
+                // Clear external status messages when showing an info message in the table
+                if (!isLoading) clearStatusMessage();
+            }
+
+            // --- Helper: Display Status Messages (External Div - for NON-fetch errors) ---
+            function displayStatusMessage(message, type = 'info') {
+                 // *** DO NOT display 'danger' type messages here from fetch errors ***
+                 if (type === 'danger') {
+                     console.error("Attempted to display danger message:", message); // Log it internally
+                     return; // Skip showing to user
+                 }
+                apiStatusElem.textContent = message;
+                apiStatusElem.className = `alert alert-${type}`;
+                apiStatusElem.style.display = 'block';
+            }
+
+            function clearStatusMessage() {
+                apiStatusElem.textContent = '';
+                apiStatusElem.style.display = 'none';
+                apiStatusElem.className = '';
+            }
+
+            // --- Helper: Manage Connection Status Icon ---
+            function showConnectionErrorIcon(show = true) {
+                 if (show) {
+                     connectionStatusIconElem.classList.add('visible');
+                 } else {
+                     connectionStatusIconElem.classList.remove('visible');
+                 }
+            }
+
+            // --- Generate Table Header (same as before) ---
+             function generateTableHeader() {
+                 let headerHtml = '<tr>';
+                 for (let i = 0; i < COURTS_PER_ROW; i++) { headerHtml += '<th>Court</th><th>S.No.</th>'; }
+                 headerHtml += '</tr>';
+                 courtDataTableHeaderElem.innerHTML = headerHtml;
+             }
+
+             // --- Populate High Court Dropdown (same as before) ---
+             function populateHighCourtDropdown() {
+                 if (typeof highCourtNames !== 'undefined' && Array.isArray(highCourtNames)) {
+                     highCourtNames.forEach(courtName => {
+                         const option = document.createElement('option');
+                         option.value = courtName; option.textContent = courtName;
+                         highCourtSelectElem.appendChild(option);
+                     });
+                 } else {
+                     console.error("highCourtNames array not found in data.js.");
+                     highCourtSelectElem.disabled = true;
+                     highCourtSelectElem.innerHTML = '<option>Error loading courts</option>';
+                     showTableMessage("Error loading High Court list. Cannot fetch data.");
+                 }
+             }
+
+            // --- Update Date and Time (same as before) ---
+            function updateDateTime() {
+                const now = new Date();
+                currentDateElem.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                currentTimeElem.textContent = now.toLocaleTimeString();
+            }
+
+            // --- Fetch and Display Court Data (MODIFIED ERROR HANDLING) ---
+            async function fetchAndDisplayCourtData() {
+                if (!selectedCourtName) { return; }
+
+                // Check if the table currently has *data* (not just a message row)
+                const hasExistingData = courtDataTableBodyElem.querySelector('tr:not(.table-message)') !== null;
+
+                // Show loading message ONLY if there's no existing data displayed
+                 if (!hasExistingData) {
+                    showTableMessage(`Fetching data for ${selectedCourtName}...`, true);
+                 }
+                 // Always clear external status messages before fetch attempt
+                 clearStatusMessage();
+
+
+                const encodedCourtName = encodeURIComponent(selectedCourtName);
+                const apiUrlWithQuery = `${API_ENDPOINT}?court=${encodedCourtName}`;
+                console.log("Fetching from:", apiUrlWithQuery);
+
+                try {
+                    const response = await fetch(apiUrlWithQuery, {
+                        method: 'GET', headers: { 'Accept': 'application/json' }
+                    });
+
+                    if (!response.ok) {
+                        // *** FAILED REQUEST ***
+                        let errorMsg = `API Error: ${response.status}`;
+                        try { const errorData = await response.json(); errorMsg = errorData.detail || errorData.message || errorMsg; }
+                        catch (e) { try { const errorText = await response.text(); if(errorText) errorMsg += ` - ${errorText.substring(0, 100)}`; } catch(textErr){} }
+                        // Throw error to be caught below, DON'T modify table here
+                        throw new Error(errorMsg);
+                    }
+
+                    // *** SUCCESSFUL REQUEST ***
+                    const data = await response.json();
+
+                    // Clear the connection error icon on successful fetch
+                    showConnectionErrorIcon(false);
+
+                    // --- Render Table (Only on success) ---
+                    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+                        const sortedCourtNumbers = Object.keys(data).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+                        let tableRowsHtml = '';
+                        for (let i = 0; i < sortedCourtNumbers.length; i += COURTS_PER_ROW) {
+                            tableRowsHtml += '<tr>';
+                            for (let j = 0; j < COURTS_PER_ROW; j++) {
+                                const currentIndex = i + j;
+                                if (currentIndex < sortedCourtNumbers.length) {
+                                    const courtNumber = sortedCourtNumbers[currentIndex];
+                                    const serialNumber = data[courtNumber] || 'N/A';
+                                    tableRowsHtml += `<td>${courtNumber}</td><td>${serialNumber}</td>`;
+                                } else {
+                                    tableRowsHtml += '<td></td><td></td>';
+                                }
+                            }
+                            tableRowsHtml += '</tr>';
+                        }
+                        // *** Update table body ONLY on success ***
+                        courtDataTableBodyElem.innerHTML = tableRowsHtml;
+
+                    } else {
+                         // Data received, but it's empty
+                        showTableMessage(`No display data currently available for ${selectedCourtName}.`);
+                    }
+                    // --- End Render Table ---
+
+                } catch (error) {
+                    // *** CATCH FETCH/NETWORK/API ERRORS ***
+                    console.error(`Failed to fetch/display data for ${selectedCourtName}:`, error);
+
+                    // *** DO NOT change the table content ***
+                    // *** DO NOT show error in #apiStatus ***
+
+                    // *** SHOW subtle indicator ***
+                    showConnectionErrorIcon(true);
+                }
+            }
+
+            // --- Event Listener for Dropdown Change (minor change) ---
+            highCourtSelectElem.addEventListener('change', function() {
+                selectedCourtName = this.value;
+
+                if (refreshIntervalId) { clearInterval(refreshIntervalId); refreshIntervalId = null; }
+
+                // Reset connection status icon on manual change
+                showConnectionErrorIcon(false);
+                clearStatusMessage(); // Clear any potentially leftover status messages
+
+                if (selectedCourtName) {
+                    console.log("Court selected:", selectedCourtName);
+                    // Show loading message immediately for user feedback on change
+                    showTableMessage(`Loading data for ${selectedCourtName}...`, true);
+                    fetchAndDisplayCourtData(); // Fetch immediately
+                    refreshIntervalId = setInterval(fetchAndDisplayCourtData, REFRESH_INTERVAL); // Start refresh
+                } else {
+                    showTableMessage("Please select a High Court from the dropdown above.");
+                    selectedCourtName = null;
+                }
+            });
+
+            // --- Initial Setup ---
+            generateTableHeader();
+            populateHighCourtDropdown();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            // Set initial message
+            if (!selectedCourtName && highCourtSelectElem.disabled === false) { // Check if dropdown loaded correctly
+                 showTableMessage("Please select a High Court from the dropdown above.");
+            }
+            // DO NOT call fetchAndDisplayCourtData or start interval initially
+
+        });
+    </script>
+
+</body>
+</html>

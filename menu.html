@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Menu</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"> <!-- Using a slightly newer version for potentially more icons/fixes -->
+    <!-- Google Fonts (Roboto) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Styles adapted from the provided reference */
+        body {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            min-height: 100vh; /* Ensure gradient covers full height */
+            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column; /* Stack header and main content */
+        }
+
+        /* Updated Header styles to match sessions.html */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px; /* Changed from 30px */
+            /* Removed padding, background-color, border-radius, box-shadow, width */
+            /* background-color: rgba(255, 255, 255, 0.85); */ /* Removed */
+            /* border-radius: 10px; */ /* Removed */
+            /* box-shadow: 0 4px 8px rgba(0,0,0,0.1); */ /* Removed */
+            /* padding: 15px 25px; */ /* Removed */
+            /* width: 100%; */ /* Removed */
+        }
+
+        /* Updated Logo styles to match sessions.html */
+        .logo-container img {
+            width: 200px; /* Changed from 180px */
+            border-radius: 10px; /* Changed from 8px */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Added */
+            /* display: block; */ /* Removed */
+        }
+
+        /* Updated Logout Button styles to match sessions.html */
+        .logout-btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            /* border-width: 2px; */ /* Removed */
+            /* white-space: nowrap; */ /* Removed */
+        }
+
+        .logout-btn:hover {
+            background-color: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Main content area */
+        .main-content {
+            flex-grow: 1; 
+            display: flex;
+            justify-content: center; 
+            align-items: flex-start; 
+            padding-top: 30px; /* Increased top padding */
+        }
+
+        /* Card styling for the tabs */
+        .tab-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 40px 40px; /* Adjusted padding */
+            width: 100%;
+            max-width: 900px; /* Increased from 700px */
+        }
+        
+        /* Tab styling */
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 0; /* Removed bottom margin as card padding handles spacing */
+        }
+
+        .nav-tabs .nav-item {
+            margin-bottom: -1px; 
+        }
+
+        .nav-tabs .nav-link {
+            border: 1px solid transparent;
+            border-top-left-radius: .35rem; 
+            border-top-right-radius: .35rem;
+            padding: 15px 25px; /* Increased padding for larger icons/text */
+            font-size: 1.1rem; 
+            color: #0056b3; 
+            transition: all 0.2s ease-in-out;
+            display: flex; 
+            align-items: center;
+            gap: 10px; /* Increased space between icon and text */
+            font-weight: 500; /* Slightly bolder text */
+        }
+        
+        .nav-tabs .nav-link:hover,
+        .nav-tabs .nav-link:focus {
+            border-color: #e9ecef #e9ecef #dee2e6;
+            background-color: #e9ecef; 
+            color: #003d80; 
+        }
+
+        .nav-tabs .nav-link i {
+            font-size: 1.8rem; /* Increased icon size */
+            line-height: 1; /* Helps vertical alignment */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo-container">
+            <!-- Make sure the path to your logo is correct -->
+            <img src="./resources/logo.png" alt="Logo"> 
+        </div>
+        <button id="logoutBtn" class="btn btn-outline-danger logout-btn">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </button>
+    </div>
+
+    <div class="main-content">
+        <div class="tab-card">
+            
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs justify-content-center"> 
+              <li class="nav-item">
+                <a class="nav-link" href="display.html">
+                    <i class="bi bi-display"></i> Display Board
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="case_Details.html">
+                    <i class="bi bi-folder-check"></i> Get Case Details
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="sessions.html">
+                    <i class="bi bi-file-earmark-text"></i> Get FIR
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="chargesheet.html">
+                    <i class="bi bi-file-earmark-medical"></i> Chargesheet Analyser
+                </a>
+              </li>
+            </ul>
+            
+            <!-- Removed the title and paragraph -->
+
+        </div> <!-- End tab-card -->
+    </div> <!-- End main-content -->
+
+    <!-- Optional: Bootstrap JS Bundle -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
+    
+    <!-- Basic Logout Script -->
+    <script>
+        // Optional: Check if user is logged in (basic check)
+        // const sessionId = localStorage.getItem('session_id');
+        // const userId = localStorage.getItem('user_id');
+        // if (!sessionId || !userId) {
+        //    console.log("Not logged in, redirecting...");
+        //    window.location.href = 'login.html'; 
+        // }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            // Clear user session data
+            localStorage.removeItem('session_id');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('chat_session_id'); 
+            sessionStorage.clear(); 
+
+            // Redirect to login page
+            window.location.href = 'login.html'; 
+        });
+    </script>
+
+</body>
+</html>

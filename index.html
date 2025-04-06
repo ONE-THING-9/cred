@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal-Yantra - Smart Legal Solutions</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #5E60CE;
+      --secondary-color: #64DFDF;
+      --dark-color: #2A2A72;
+      --light-color: #f8f9fa;
+      --accent-color: #FF9F1C;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #424242;
+      overflow-x: hidden;
+    }
+    
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #5E60CE, #56CFE1);
+      color: white;
+      padding: 120px 0 80px;
+      position: relative;
+    }
+    
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -50px;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: white;
+      clip-path: polygon(0 0, 100% 50%, 100% 100%, 0% 100%);
+    }
+    
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    
+    .hero p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+    
+    .cta-btn {
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .cta-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    
+    /* Features Section */
+    .features {
+      padding: 100px 0 80px;
+      background-color: #F5F3FF;
+    }
+    
+    .section-title {
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+    }
+    
+    .section-title::after {
+      content: '';
+      width: 80px;
+      height: 3px;
+      background: var(--primary-color);
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .feature-box {
+      padding: 30px;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 5px 30px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .feature-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    
+    .feature-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      object-fit: contain;
+    }
+    
+    .feature-title {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: #2A2A72;
+    }
+    
+    .feature-summary {
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    
+    .know-more-btn {
+      color: #5E60CE;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .know-more-btn:hover {
+      color: #64DFDF;
+    }
+    
+    .know-more-btn i {
+      margin-left: 5px;
+      transition: all 0.3s ease;
+    }
+    
+    .know-more-btn:hover i {
+      transform: translateX(3px);
+    }
+    
+    .feature-details {
+      height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: all 0.4s ease;
+      margin-top: 15px;
+      padding: 0;
+      border-top: 1px solid #eee;
+    }
+    
+    .feature-details.show {
+      height: auto;
+      padding-top: 15px;
+      opacity: 1;
+    }
+    
+    /* Footer Section */
+    .footer {
+      background-color: #2A2A72;
+      color: white;
+      padding: 60px 0 30px;
+    }
+    
+    .footer-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      position: relative;
+      padding-bottom: 10px;
+    }
+    
+    .footer-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background: var(--accent-color);
+    }
+    
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+    
+    .footer-links a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .footer-links a:hover {
+      color: white;
+      padding-left: 5px;
+    }
+    
+    .social-icons {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .social-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+    
+    .social-icon:hover {
+      background: var(--accent-color);
+      transform: translateY(-3px);
+    }
+    
+    .copyright {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+    }
+    
+    /* Navbar */
+    .navbar {
+      background-color: transparent;
+      transition: all 0.3s ease;
+      padding: 20px 0;
+    }
+    
+    .navbar.scrolled {
+      background-color: white;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      padding: 10px 0;
+    }
+    
+    .navbar-brand img {
+      height: 60px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+    
+    .navbar-brand img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .nav-link {
+      color: white;
+      font-weight: 500;
+      margin: 0 10px;
+      padding: 8px 15px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+    
+    .navbar.scrolled .nav-link {
+      color: #333;
+    }
+    
+    .nav-link:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .navbar.scrolled .nav-link:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    
+    .navbar-login {
+      background: white;
+      color: #5E60CE !important;
+      padding: 8px 20px !important;
+      border-radius: 50px;
+      font-weight: 600;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .navbar-login:hover {
+      background: #f8f9fa !important;
+      transform: translateY(-2px);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      .features {
+        padding: 60px 0;
+      }
+      
+      .feature-box {
+        margin-bottom: 30px;
+      }
+      
+      .navbar-collapse {
+        background: rgba(255,255,255,0.95);
+        margin-top: 15px;
+        border-radius: 10px;
+        padding: 15px;
+      }
+      
+      .nav-link {
+        color: #333 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <img src="./resources/logo.png" alt="Legal-Yantra Logo">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#features">Features</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#contact">Contact</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link navbar-login" href="login.html">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero text-center">
+    <div class="container">
+      <div data-aos="fade-up" data-aos-duration="1000">
+        <h1>Smart Legal Solutions Powered by AI</h1>
+        <p>Transform your legal research with our powerful AI-driven platform that helps you find relevant cases and insights in seconds.</p>
+        <a href="login.html" class="btn btn-light cta-btn">Get Started</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Our Key Features</h2>
+      
+      <div class="row mt-5">
+        <!-- Feature 1 -->
+        <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-box">
+            <div class="feature-icon d-flex justify-content-center align-items-center">
+              <i class="bi bi-journal-text" style="font-size: 3rem; color: #5E60CE;"></i>
+            </div>
+            <h3 class="feature-title">AI-Powered Case Archive</h3>
+            <p class="feature-summary">Fetch case details, generate AI summary, download PDF copies seamlessly.</p>
+            <div class="know-more-btn">
+              Know More <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="feature-details">
+              <p>Our AI-Powered Case Archive revolutionizes legal case management by automatically retrieving user and case details from trusted sources using a case or FIR number. Leveraging advanced AI technology, it aggregates comprehensive data, generates an insightful summary highlighting key points, and allows users to download the entire case file as a PDF. This streamlined process not only saves time but also ensures accuracy and efficiency in managing legal documents, empowering lawyers to quickly access and review vital case information for improved decision-making and enhanced client service.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-box">
+            <img src="https://img.icons8.com/cotton/80/search--v1.png" alt="Document Analysis" class="feature-icon">
+            <h3 class="feature-title">AI-Powered Case Search</h3>
+            <p class="feature-summary">Aggregate user data, fetch recent cases, interactive chat for modifications.</p>
+            <div class="know-more-btn">
+              Know More <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="feature-details">
+              <p>Our AI Legal Insights tool leverages state-of-the-art technology to consolidate user details from multiple trusted sources while retrieving the most recent and relevant case law linked to your specific legal matters. By intelligently curating up-to-date case precedents and legal documentation, this feature streamlines your research process and enhances case strategy formulation. Additionally, an interactive chat function empowers lawyers to engage with the system in real time, refining and modifying drafts to better align with evolving legal arguments and client needs. This comprehensive approach ensures efficiency, accuracy, and informed decision-making throughout your legal workflow</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+          <div class="feature-box">
+            <img src="https://img.icons8.com/cotton/80/document--v1.png" alt="Chat Assistant" class="feature-icon">
+            <h3 class="feature-title">Intelligent Draft Assistant</h3>
+            <p class="feature-summary">Retrieve client details, auto-draft legal documents, chat for seamless revisions.</p>
+            <div class="know-more-btn">
+              Know More <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="feature-details">
+              <p>Our platform leverages state-of-the-art AI to gather comprehensive user details from various sources, streamlining the legal drafting process. It automatically compiles essential information to create initial draft documents tailored for lawyers. In addition, an interactive chat feature enables real-time modifications, ensuring the draft meets precise legal standards. This innovative tool not only reduces manual effort but also enhances accuracy and efficiency, empowering legal professionals to deliver well-structured, comprehensive legal documents with ease.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- About Section -->
+  <section id="about" class="py-5 bg-light">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6" data-aos="fade-right">
+          <h2 class="mb-4">About Legal-Yantra</h2>
+          <p class="lead">We're transforming legal work with cutting-edge AI technology.</p>
+          <p>Legal-Yantra was founded by a team of legal professionals and AI experts with a mission to make legal research more efficient, accurate, and accessible. Our platform leverages the latest advancements in artificial intelligence to help lawyers, paralegals, and legal researchers find relevant information faster.Our platform empowers lawyers by streamlining client data management—securely storing, organizing, and tracking vital information</p>
+          <p>With Legal-Yantra, you can reduce research time by up to 70%, increase accuracy, and discover relevant precedents that might otherwise be missed using traditional research methods.</p>
+        </div>
+        <div class="col-lg-6" data-aos="fade-left">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact" class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h4 class="footer-title">Legal-Yantra</h4>
+          <p>Advanced legal research platform powered by artificial intelligence. Making legal professionals more efficient and effective.</p>
+          <div class="social-icons">
+            <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="social-icon"><i class="bi bi-twitter"></i></a>
+            <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
+            <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-2 mb-4">
+          <h4 class="footer-title">Links</h4>
+          <ul class="list-unstyled footer-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="login.html">Login</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 mb-4">
+          <h4 class="footer-title">Legal</h4>
+          <ul class="list-unstyled footer-links">
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+            <li><a href="#">GDPR Compliance</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 mb-4">
+          <h4 class="footer-title">Contact Us</h4>
+          <ul class="list-unstyled footer-links">
+            <li><i class="bi bi-geo-alt me-2"></i> 123 Legal Street, Suite 100</li>
+            <li><i class="bi bi-envelope me-2"></i> info@legalai.com</li>
+            <li><i class="bi bi-telephone me-2"></i> (123) 456-7890</li>
+          </ul>
+        </div>
+      </div>
+      <div class="copyright">
+        &copy; 2025 Legal-Yantra. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- AOS Animation Library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <!-- Config file -->
+  <script src="./config.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init();
+    
+    // Call API when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch(`${config.base_url}/alive`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => console.log('API Response:', data))
+      .catch(error => console.error('Error calling API:', error));
+      
+      const navbar = document.querySelector('.navbar');
+      
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 50) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+      
+      // Toggle feature details
+      const knowMoreBtns = document.querySelectorAll('.know-more-btn');
+      
+      knowMoreBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const details = this.nextElementSibling;
+          const icon = this.querySelector('i');
+          
+          if (details.classList.contains('show')) {
+            details.classList.remove('show');
+            icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
+          } else {
+            details.classList.add('show');
+            icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
+          }
+        });
+      });
+      
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html> 

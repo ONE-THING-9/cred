@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FIR Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-container img {
+            width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .sessions-column {
+            max-height: 80vh;
+            overflow-y: auto;
+            padding-right: 20px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .session-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .session-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .session-card i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        .session-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-control {
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        .markdown-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+
+        .markdown-content p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .markdown-content ul, .markdown-content ol {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="header">
+            <div class="logo-container">
+                <img src="./resources/logo.png" alt="Logo">
+            </div>
+            <button id="logoutBtn" class="btn btn-outline-danger logout-btn">Logout</button>
+        </div>
+        <div class="row">
+            <div class="col-md-2 sessions-column">
+                <h2>Your Recent Sessions</h2>
+                <div id="sessionsGrid"></div>
+            </div>
+            <div class="col-md-10">
+                <div class="card p-4">
+                    <h2 class="mb-4">FIR Details</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="year">Year</label>
+                            <select id="year" class="form-control">
+                                <option value="">Select Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="district">District</label>
+                            <select id="district" class="form-control">
+                                <option value="">Select District</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label for="policeStation">Police Station</label>
+                            <select id="policeStation" class="form-control">
+                                <option value="">Select Police Station</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="numberInput">FIR NUMBER</label>
+                            <input type="number" id="numberInput" class="form-control" placeholder="Enter FIR NUMBER">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col">
+                            <button id="getSummary" class="btn btn-primary btn-lg"><i class="bi bi-info-circle"></i> Get Details</button>
+                            <button id="downloadPdf" class="btn btn-success" disabled><i class="bi bi-download"></i> Download PDF</button>
+                            <button id="makeDraft" class="btn btn-secondary" disabled><i class="bi bi-pencil"></i> Make Draft</button>
+                            <button id="getRelevantCase" class="btn btn-info" disabled><i class="bi bi-search"></i> Get Relevant Case</button>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col">
+                            <div id="summaryContent" class="markdown-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <!-- Include the config file -->
+    <script src="./config.js"></script>
+    <script>
+        const sessionId = localStorage.getItem('session_id');
+        const userId = localStorage.getItem('user_id');
+
+        // Only check for authentication session_id
+        if (!sessionId || !userId) {
+            window.location.href = 'login.html';
+        }
+
+        // Add the missing addSessionHeader function
+        function addSessionHeader(additionalHeaders = {}) {
+            const headers = {
+                'Session-ID': sessionId,
+                ...additionalHeaders
+            };
+            return headers;
+        }
+
+        let summaryResponse = "";
+        let sessionsData = new Map(); // Store sessions with their IDs
+
+        // Populate year dropdown
+        const yearSelect = document.getElementById('year');
+        for (let y = 2015; y <= 2025; y++) {
+            const option = document.createElement('option');
+            option.value = y;
+            option.textContent = y;
+            yearSelect.appendChild(option);
+        }
+
+        // Populate district dropdown
+        const districtSelect = document.getElementById('district');
+        if (typeof districts !== 'undefined') {
+            districts.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d;
+                option.textContent = d;
+                districtSelect.appendChild(option);
+            });
+        } else {
+            console.error("District data not found.");
+        }
+
+        // Handle district change
+        districtSelect.addEventListener('change', function() {
+            const district = this.value;
+            const policeSelect = document.getElementById('policeStation');
+            policeSelect.innerHTML = '<option value="">Select Police Station</option>';
+            if (district && typeof haryana_police_stations !== 'undefined' && haryana_police_stations[district]) {
+                haryana_police_stations[district].forEach(ps => {
+                    const option = document.createElement('option');
+                    option.value = ps;
+                    option.textContent = ps;
+                    policeSelect.appendChild(option);
+                });
+            }
+        });
+
+        // Load user sessions
+        async function loadUserSessions() {
+            try {
+                const response = await fetch(`${config.base_url}/get-user-details`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const result = await response.json();
+                if (result.status === "success" && result.user_details) {
+                    const sessionsGrid = document.getElementById('sessionsGrid');
+                    sessionsGrid.innerHTML = '';
+                    
+                    if (result.user_details.length === 0) {
+                        sessionsGrid.innerHTML = '<div class="text-center text-muted">No previous sessions found.</div>';
+                        return;
+                    }
+
+                    result.user_details.forEach((session) => {
+                        sessionsData.set(session.session_id, session.title);
+                        const card = createSessionCard(session.session_id, session.title);
+                        sessionsGrid.appendChild(card);
+                    });
+                } else {
+                    console.error("Failed to load sessions:", result.message);
+                    sessionsGrid.innerHTML = '<div class="text-center text-danger">Failed to load sessions.</div>';
+                }
+            } catch (error) {
+                console.error("Error loading sessions:", error);
+                sessionsGrid.innerHTML = '<div class="text-center text-danger">Error loading sessions.</div>';
+            }
+        }
+
+        function createSessionCard(sessionId, title) {
+            const card = document.createElement('div');
+            card.className = 'session-card';
+            card.innerHTML = `<i class="bi bi-clock"></i><div class="session-title">${title}</div>`;
+            card.addEventListener('click', () => loadSessionHistory(sessionId));
+            return card;
+        }
+
+        async function loadSessionHistory(sessionId) {
+            document.getElementById('summaryContent').innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading session details...</p>
+                </div>`;
+            try {
+                const response = await fetch(`${config.base_url}/get-session-history`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        user_id: userId
+                    })
+                });
+                const result = await response.json();
+                if (result.status === "success" && result.data) {
+                    // Store the chat session ID
+                    localStorage.setItem('chat_session_id', sessionId);
+                    
+                    // Fill in the year and district first
+                    document.getElementById('year').value = result.data.year;
+                    document.getElementById('district').value = result.data.district;
+                    
+                    // Trigger district change to populate police stations
+                    const districtEvent = new Event('change');
+                    document.getElementById('district').dispatchEvent(districtEvent);
+                    
+                    // Now set the police station value after the dropdown has been populated
+                    setTimeout(() => {
+                        document.getElementById('policeStation').value = result.data.police_station;
+                    }, 0);
+                    
+                    // Set the FIR number
+                    document.getElementById('numberInput').value = result.data.fir;
+                    
+                    // Set the summary 
+                    summaryResponse = result.data.summary;
+                    
+                    // Display the summary
+                    document.getElementById('summaryContent').innerHTML = marked.parse(summaryResponse);
+                    
+                    // Enable buttons
+                    document.getElementById('downloadPdf').disabled = false;
+                    document.getElementById('makeDraft').disabled = false;
+                    document.getElementById('getRelevantCase').disabled = false;
+                    document.getElementById('getRelevantCase').classList.remove('d-none');
+                } else {
+                    console.error("Failed to load session history:", result.message);
+                    document.getElementById('summaryContent').innerHTML = `<p class="text-danger">Error: ${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error("Error loading session history:", error);
+                document.getElementById('summaryContent').innerHTML = '<p class="text-danger">Error loading session history.</p>';
+            }
+        }
+
+        function validateInputs() {
+            const year = document.getElementById('year').value;
+            const district = document.getElementById('district').value;
+            const policeStation = document.getElementById('policeStation').value;
+            const numberVal = document.getElementById('numberInput').value;
+            return year && district && policeStation && numberVal !== "" && Number.isInteger(Number(numberVal));
+        }
+
+        document.getElementById('getSummary').addEventListener('click', async () => {
+            if (!validateInputs()) {
+                alert("Please fill all fields correctly.");
+                return;
+            }
+
+            // Clear summary and show loading animation
+            document.getElementById('summaryContent').innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Processing your request...</p>
+                </div>`;
+
+            // Disable buttons
+            document.getElementById('downloadPdf').disabled = true;
+            document.getElementById('makeDraft').disabled = true;
+            document.getElementById('getRelevantCase').disabled = true;
+
+            const data = {
+                police_station: document.getElementById('policeStation').value.toUpperCase(),
+                year: parseInt(document.getElementById('year').value),
+                district: document.getElementById('district').value.toUpperCase(),
+                fir_number: document.getElementById('numberInput').value.toString(),
+                user_id: userId.toString()
+            };
+            
+            try {
+                const response = await fetch(`${config.base_url}/get-fir-details`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Session-ID': sessionId
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.status === "success" && result.data) {
+                    if (result.data.session_id) {
+                        localStorage.setItem('chat_session_id', result.data.session_id);
+                    }
+                    
+                    summaryResponse = result.data.summary;
+                    document.getElementById('summaryContent').innerHTML = marked.parse(summaryResponse);
+                    document.getElementById('downloadPdf').disabled = false;
+                    document.getElementById('makeDraft').disabled = false;
+                    document.getElementById('getRelevantCase').disabled = false;
+                    document.getElementById('getRelevantCase').classList.remove('d-none');
+                    loadUserSessions();
+                } else {
+                    document.getElementById('summaryContent').innerHTML = `<p class="text-danger">Error: ${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error("Error getting summary:", error);
+                document.getElementById('summaryContent').innerHTML = '<p class="text-danger">Error getting summary.</p>';
+            }
+        });
+
+        document.getElementById('downloadPdf').addEventListener('click', async () => {
+            try {
+                const currentSessionId = localStorage.getItem('chat_session_id');
+                if (!currentSessionId) {
+                    alert("Session ID not found. Please get FIR details first.");
+                    return;
+                }
+
+                // Show download indicator
+                document.getElementById('downloadPdf').disabled = true;
+                document.getElementById('downloadPdf').innerHTML = '<i class="bi bi-hourglass"></i> Downloading...';
+                
+                // Call the new download-fir-pdf API
+                const response = await fetch(`${config.base_url}/download-fir-pdf`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Session-ID': sessionId
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        user_id: userId
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                // Create a blob from the response
+                const blob = await response.blob();
+                
+                // Create an object URL for the blob
+                const url = window.URL.createObjectURL(blob);
+                
+                // Create a temporary anchor element and trigger download
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `FIR_${currentSessionId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Reset button
+                document.getElementById('downloadPdf').disabled = false;
+                document.getElementById('downloadPdf').innerHTML = '<i class="bi bi-download"></i> Download PDF';
+                
+            } catch (error) {
+                console.error("Error downloading PDF:", error);
+                alert("Failed to download PDF: " + error.message);
+                document.getElementById('downloadPdf').disabled = false;
+                document.getElementById('downloadPdf').innerHTML = '<i class="bi bi-download"></i> Download PDF';
+            }
+        });
+
+        document.getElementById('makeDraft').addEventListener('click', () => {
+            // Store the current session details
+            sessionStorage.setItem('draft_summary', summaryResponse);
+            // Get existing chat_session_id from localStorage
+            const existingChatSessionId = localStorage.getItem('chat_session_id');
+            // Store the same chat_session_id before opening draft page
+            localStorage.setItem('chat_session_id', existingChatSessionId);
+            window.open('draft.html', '_blank');
+        });
+
+        document.getElementById('getRelevantCase').addEventListener('click', () => {
+            sessionStorage.setItem('search_summary', summaryResponse);
+            sessionStorage.setItem('search_previous_draft', null);
+            window.open('search.html', '_blank');
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${config.base_url}/logout`, {
+                    method: 'POST',
+                    headers: addSessionHeader()
+                });
+                
+                const result = await response.json();
+                if (result.status === "success") {
+                    // Clear session storage and local storage
+                    sessionStorage.clear();
+                    localStorage.removeItem('session_id');
+                    localStorage.removeItem('user_id');
+                    // Redirect to login page
+                    window.location.href = 'login.html';
+                } else {
+                    alert("Logout failed: " + result.message);
+                }
+            } catch (error) {
+                alert("Error during logout: " + error.message);
+            }
+        });
+
+        // Add session validation to all API calls
+        async function validateSession() {
+            try {
+                const response = await fetch(`${config.base_url}/validate-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Session-ID': sessionId
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+                if (data.status !== "success") {
+                    localStorage.removeItem('session_id');
+                    localStorage.removeItem('user_id');
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error("Session validation error:", error);
+            }
+        }
+
+        // Call session validation when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserSessions();
+        });
+
+        async function getDraft(userMessage = null) {
+            try {
+                const response = await fetch(`${config.base_url}/get-draft`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: localStorage.getItem('chat_session_id'),
+                        user_message: userMessage
+                    })
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    const chatContainer = document.getElementById('chat-container');
+                    
+                    // Clear existing chat
+                    chatContainer.innerHTML = '';
+
+                    if (userMessage === null && result.message) {
+                        // Handle previous draft (array of messages)
+                        result.message.forEach((turn, index) => {
+                            if (turn) {  // Only add if message is not None
+                                const messageDiv = document.createElement('div');
+                                messageDiv.className = index % 2 === 0 ? 'user-message' : 'bot-message';
+                                messageDiv.innerHTML = `<p>${marked.parse(turn)}</p>`;
+                                chatContainer.appendChild(messageDiv);
+                            }
+                        });
+                    } else if (result.data && result.data.chat_draft) {
+                        // Handle new bot response (single message)
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'bot-message';
+                        messageDiv.innerHTML = `<p>${marked.parse(result.data.chat_draft)}</p>`;
+                        chatContainer.appendChild(messageDiv);
+                    }
+
+                    // Scroll to bottom
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                } else {
+                    console.error("Failed to get draft:", result.message);
+                }
+            } catch (error) {
+                console.error("Error getting draft:", error);
+            }
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'redirect_trigger') {
+                // Acknowledge presence to other tabs
+                localStorage.setItem('sessions_page_active', Date.now().toString());
+                // Focus this tab
+                window.focus();
+            }
+        });
+    </script>
+</body>
+</html>
